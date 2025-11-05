@@ -167,7 +167,6 @@ export const searchProductsTool = createTool({
         query,
         category,
         subCategory,
-        location,
         currency,
         minPrice,
         maxPrice,
@@ -180,11 +179,11 @@ export const searchProductsTool = createTool({
 
       const facetFilters: string[][] = [['status:available']];
 
-      if (location) {
-        const locationTerms = location.split(/[,\s]+/).filter(Boolean);
-        const locationFilters = locationTerms.map(term => `location_facets:${term}`);
-        facetFilters.push(locationFilters);
-      }
+    //   if (location) {
+    //     const locationTerms = location.split(/[,\s]+/).filter(Boolean);
+    //     const locationFilters = locationTerms.map((term: string) => `location_facets:${term}`);
+    //     facetFilters.push(locationFilters);
+    //   }
 
       if (currency) facetFilters.push([`currency:${currency}`]);
       if (gender) facetFilters.push([`gender:${gender}`]);

@@ -24,5 +24,15 @@ export const mastra = new Mastra({
   },
   bundler: {
     externals: ["@mastra/mongodb"],
-  }
+  },
+  server: {
+    port: 4111, 
+    cors: {
+      origin: ['*'],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: false,
+    },
+
+  },
 });
