@@ -6,4 +6,4 @@ dist
 .env 
 *.db 
 *.db-* 
-lib/ServiceAccountKey.json
+ServiceAccountKey.json
