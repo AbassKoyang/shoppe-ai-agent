@@ -1,7 +1,6 @@
 import { createTool } from "@mastra/core/tools";
-import { db } from "../../../lib/firebase";
 import z from "zod";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {db} from '../../../lib/firebase-admin';
 
 export const ProductSchema = z
   .object({
@@ -159,9 +158,7 @@ export const getProductsTool = createTool({
     inputSchema: z.object({}),
     outputSchema: ProductSchema.array().describe('Array of products on shoppe'),
     execute: async () => {
-        const colRef = collection(db, 'products');
-        const q = query(colRef, where('status', '==', 'available'))
-        const snapshot = await getDocs(q);
+        const snapshot = await db.collection('products').where('status', '==', 'available').get();
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ProductType[];
     },
 
