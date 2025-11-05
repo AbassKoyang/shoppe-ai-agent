@@ -23,7 +23,7 @@ export const mastra = new Mastra({
     default: { enabled: true }, 
   },
   bundler: {
-    externals: ["@mastra/mongodb"],
+    externals: ["@mastra/mongodb", "firebase-admin"],
   },
   server: {
     port: 4111, 
