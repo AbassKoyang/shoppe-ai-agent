@@ -28,7 +28,7 @@ export const mastra = new Mastra({
   server: {
     port: 4111, 
     cors: {
-      origin: ['*'],
+      origin: ['https://localhost:3000'],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
       credentials: false,

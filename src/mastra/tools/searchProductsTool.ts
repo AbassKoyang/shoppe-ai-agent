@@ -3,8 +3,7 @@ dotenv.config();
 import { createTool } from '@mastra/core';
 import { z } from 'zod';
 import {algoliasearch, SearchResponse} from 'algoliasearch';
-import { ProductSchema } from './productTools';
-type ProductType = z.infer<typeof ProductSchema>;
+import { ProductSchema, ProductType } from './types';
 
 const ALGOLIA_APP_ID = process.env.PUBLIC_ALGOLIA_APP_ID!;
 const ALGOLIA_WRITE_API_KEY = process.env.PUBLIC_ALGOLIA_WRITE_API_KEY!;
@@ -15,145 +14,75 @@ const client = algoliasearch(ALGOLIA_APP_ID, ALGOLIA_WRITE_API_KEY);
 export const searchProductsTool = createTool({
   id: 'searchProductsTool',
   description: `
-  Search for products in the Shoppe marketplace by name, price range, category, location, and other filters.
-  Returns an array of products that match the user's criteria. Include keywords like shoes, tops, pants - the category of the clothing, color, location etc as part of the query`,
-  inputSchema: z.object({
-    query: z.string().optional().describe('Search keyword or product name. Include keywords like shoes, tops, pants etc as part of the query'),
-    currency: z.union([z.literal("$ USD"), z.literal("€ EURO"), z.literal("₦ NGN")]).default("₦ NGN"),
-    category: z.literal(["Tops","Bottoms","Dresses","Outerwear","Shoes","Accessories","Bags","Underwear","Swimwear","Activewear","Other"]),
-    subCategory: z.literal([
-    "T-Shirts",
-    "Polo Shirts",
-    "Tank Tops",
-    "Blouses",
-    "Dress Shirts",
-    "Henleys",
-    "Sweatshirts",
-    "Hoodies",
-    "Crop Tops",
-    "Tunics",
+Search for products listed on the Shoppe marketplace using flexible filters such as name, price range, category, location, color, size, and condition.  
+The tool returns an array of matching products based on the user’s search criteria.  
+Include descriptive keywords in your query (e.g., "blue sneakers", "men's polo shirts", "leather bags", "vintage dresses") to refine the search and improve accuracy.`,
+inputSchema: z.object({
+  query: z.string().optional().describe(
+    'Search keyword or product name. Include descriptive keywords such as "sneakers", "tops", "pants", "red dress", or "men’s jacket" to refine results.'
+  ),
 
-    "Jeans",
-    "Chinos",
-    "Dress Pants",
-    "Joggers",
-    "Leggings",
-    "Shorts",
-    "Cargo Pants",
-    "Skirts",
-    "Capris",
-    "Overalls",
+  currency: z.union([
+    z.literal("$ USD"),
+    z.literal("€ EURO"),
+    z.literal("₦ NGN")
+  ]).default("₦ NGN").optional(),
 
-    "Casual Dresses",
-    "Evening Gowns",
-    "Cocktail Dresses",
-    "Maxi Dresses",
-    "Mini Dresses",
-    "Bodycon Dresses",
-    "Wrap Dresses",
-    "Shirt Dresses",
-    "Sundresses",
-    "Work Dresses",
+  category: z.literal([
+    "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories", "Bags",
+    "Underwear", "Swimwear", "Activewear", "Other"
+  ]).array().optional().describe(
+    "Main category of the product, such as Tops, Bottoms, Shoes, Accessories, etc."
+  ),
 
-    "Jackets",
-    "Blazers",
-    "Coats",
-    "Trench Coats",
-    "Parkas",
-    "Bomber Jackets",
-    "Leather Jackets",
-    "Denim Jackets",
-    "Cardigans",
-    "Vests",
-    
-    "Sneakers",
-    "Boots",
-    "Sandals",
-    "Loafers",
-    "Heels",
-    "Flats",
-    "Wedges",
-    "Espadrilles",
-    "Oxfords",
-    "Slippers",
-    
-    "Backpacks",
-    "Tote Bags",
-    "Crossbody Bags",
-    "Clutches",
-    "Shoulder Bags",
-    "Messenger Bags",
-    "Satchels",
-    "Duffle Bags",
-    "Belt Bags",
-    "Laptop Bags",
+  subCategory: z.literal([
+    "T-Shirts", "Polo Shirts", "Tank Tops", "Blouses", "Dress Shirts", "Henleys",
+    "Sweatshirts", "Hoodies", "Crop Tops", "Tunics",
+    "Jeans", "Chinos", "Dress Pants", "Joggers", "Leggings", "Shorts", "Cargo Pants", "Skirts", "Capris", "Overalls",
+    "Casual Dresses", "Evening Gowns", "Cocktail Dresses", "Maxi Dresses", "Mini Dresses", "Bodycon Dresses", "Wrap Dresses", "Shirt Dresses", "Sundresses", "Work Dresses",
+    "Jackets", "Blazers", "Coats", "Trench Coats", "Parkas", "Bomber Jackets", "Leather Jackets", "Denim Jackets", "Cardigans", "Vests",
+    "Sneakers", "Boots", "Sandals", "Loafers", "Heels", "Flats", "Wedges", "Espadrilles", "Oxfords", "Slippers",
+    "Backpacks", "Tote Bags", "Crossbody Bags", "Clutches", "Shoulder Bags", "Messenger Bags", "Satchels", "Duffle Bags", "Belt Bags", "Laptop Bags",
+    "Hats & Caps", "Scarves", "Gloves", "Belts", "Ties & Bowties", "Watches", "Jewelry", "Sunglasses", "Wallets", "Hair Accessories",
+    "Boxers", "Briefs", "Trunks", "Bras", "Panties", "Camisoles", "Thermal Underwear", "Shapewear", "Bralettes", "Lingerie",
+    "Bikinis", "One-Piece Swimsuits", "Tankinis", "Swim Trunks", "Boardshorts", "Rash Guards", "Swim Dresses", "Monokinis", "Swim Skirts", "Cover-Ups",
+    "Gym Shorts", "Sports Bras", "Leggings", "Tracksuits", "Compression Wear", "Athletic T-Shirts", "Tank Tops", "Joggers", "Hoodies", "Yoga Pants",
+    "Custom Wear", "Uniforms", "Costumes", "Maternity Wear", "Workwear", "Ethnic Wear", "Festival Outfits", "Seasonal Clothing", "Vintage", "Miscellaneous"
+  ]).optional().describe(
+    "Specific subcategory under the main category, such as 'Sneakers', 'Hoodies', or 'Maxi Dresses'."
+  ),
 
-    "Hats & Caps",
-    "Scarves",
-    "Gloves",
-    "Belts",
-    "Ties & Bowties",
-    "Watches",
-    "Jewelry",
-    "Sunglasses",
-    "Wallets",
-    "Hair Accessories",
+  minPrice: z.number().optional().describe(
+    "Minimum price to include in search results."
+  ),
 
-    "Boxers",
-    "Briefs",
-    "Trunks",
-    "Bras",
-    "Panties",
-    "Camisoles",
-    "Thermal Underwear",
-    "Shapewear",
-    "Bralettes",
-    "Lingerie",
+  maxPrice: z.number().optional().describe(
+    "Maximum price to include in search results."
+  ),
 
-    "Bikinis",
-    "One-Piece Swimsuits",
-    "Tankinis",
-    "Swim Trunks",
-    "Boardshorts",
-    "Rash Guards",
-    "Swim Dresses",
-    "Monokinis",
-    "Swim Skirts",
-    "Cover-Ups",
+  discountPercentage: z.number().optional().describe(
+    "Filter products with at least this percentage discount."
+  ),
 
-    "Gym Shorts",
-    "Sports Bras",
-    "Leggings",
-    "Tracksuits",
-    "Compression Wear",
-    "Athletic T-Shirts",
-    "Tank Tops",
-    "Joggers",
-    "Hoodies",
-    "Yoga Pants",
+  size: z.union([
+    z.literal(["One Size", "XS", "S", "M", "L", "XL", "XXL"]),
+    z.string().regex(/^\d+$/, "Numeric size must be digits only"),
+  ]).array().default(['M']).optional().describe(
+    "Product size or measurement. Can include lettered sizes (S, M, L) or numeric sizes (e.g., 32, 40)."
+  ),
 
-    "Custom Wear",
-    "Uniforms",
-    "Costumes",
-    "Maternity Wear",
-    "Workwear",
-    "Ethnic Wear",
-    "Festival Outfits",
-    "Seasonal Clothing",
-    "Vintage",
-    "Miscellaneous"
-]).describe("The subcategory of the product."),
-    minPrice: z.number().optional(),
-    maxPrice: z.number().optional(),
-    discountPercentage: z.number().optional(),
-    size: z.union([
-        z.literal(["One Size", "XS", "S", "M", "L", "XL", "XXL"]),
-        z.string().regex(/^\d+$/, "Numeric size must be digits only"),
-      ]).array(),
-    gender: z.literal(["Men", "Women", "Unisex"]).optional(),
-    condition: z.literal(["new", "used"]).optional(),
-    order: z.literal(["Popular", "Newest", "Oldest", "PriceHighToLow", "PriceLowToHigh"]).optional().describe("The order in which the products should be arranged"),
-  }),
+  gender: z.literal(["Men", "Women", "Unisex"]).optional().describe(
+    "Target gender for the product, such as Men, Women, or Unisex."
+  ),
+
+  condition: z.literal(["new", "used"]).optional().describe(
+    "Condition of the product — either 'new' or 'used'."
+  ),
+
+  order: z.literal(["Popular", "Newest", "Oldest", "PriceHighToLow", "PriceLowToHigh"]).optional().describe(
+    "Sorting order for results — e.g., by popularity, newest arrivals, or price range."
+  ),
+}),
   outputSchema: z.object({
     success: z.boolean(),
     count: z.number(),
@@ -179,12 +108,6 @@ export const searchProductsTool = createTool({
 
       const facetFilters: string[][] = [['status:available']];
 
-    //   if (location) {
-    //     const locationTerms = location.split(/[,\s]+/).filter(Boolean);
-    //     const locationFilters = locationTerms.map((term: string) => `location_facets:${term}`);
-    //     facetFilters.push(locationFilters);
-    //   }
-
       if (currency) facetFilters.push([`currency:${currency}`]);
       if (gender) facetFilters.push([`gender:${gender}`]);
       if (condition) facetFilters.push([`condition:${condition}`]);
@@ -200,7 +123,7 @@ export const searchProductsTool = createTool({
         const formatCategory = (categories: string[]) => {
         return categories.map((s) => `category:${s}`)
         } 
-        const formattedCategories = formatCategory(size);
+        const formattedCategories = formatCategory(category);
         facetFilters.push(formattedCategories)
     }
 
